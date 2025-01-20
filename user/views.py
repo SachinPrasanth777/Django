@@ -4,6 +4,8 @@ from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
@@ -18,7 +20,7 @@ class RegisterView(generics.CreateAPIView):
 class LoginView(generics.CreateAPIView):
     serializer_class = LoginSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         username = request.data.get("username")
         password = request.data.get("password")
         user = authenticate(username=username, password=password)
@@ -37,4 +39,15 @@ class LoginView(generics.CreateAPIView):
         return Response(
             {"detail": "Invalid credentials. Please try again."},
             status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+
+class DashboardView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        user_serializer = UserSerializer(user)
+        return Response(
+            {"message": "Welcome to dashboard", "user": user_serializer.data}, 200
         )
