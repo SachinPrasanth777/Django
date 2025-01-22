@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .permissions import HasRole
 
 
 class RegisterView(generics.CreateAPIView):
@@ -43,7 +44,8 @@ class LoginView(generics.CreateAPIView):
 
 
 class DashboardView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated, HasRole]
+    required_role = "student"
 
     def get(self, request):
         user = request.user
