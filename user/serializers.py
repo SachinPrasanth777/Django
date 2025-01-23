@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Role, UserRole
+from .models import Role, UserRole, Article
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             validated_data["password"],
         )
         if role_name:
-            role, created = Role.objects.get_or_create(name=role_name)
+            role, _ = Role.objects.get_or_create(name=role_name)
             UserRole.objects.create(user=user, role=role)
         return user
 
@@ -32,3 +32,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    author = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Article
+        fields = ("id", "title", "content", "author", "created_at", "updated_at")

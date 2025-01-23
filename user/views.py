@@ -8,8 +8,14 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    UserSerializer,
+    ArticleSerializer,
+)
 from .permissions import HasRole
+from .models import Article
 
 
 class RegisterView(generics.CreateAPIView):
@@ -53,3 +59,22 @@ class DashboardView(APIView):
         return Response(
             {"message": "Welcome to dashboard", "user": user_serializer.data}, 200
         )
+
+
+class ArticleListCreateView(generics.ListCreateAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class ArticleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        print(self.request.user.id)
+        return Article.objects.filter(author=self.request.user.id)
